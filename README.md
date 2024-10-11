@@ -21,7 +21,7 @@
 
 * 如果不指定开始文件名，工具会在目录树中递归搜索以下文件名：`login.vue`、`app.py`、`index.js`、`index.php`、`index.html`
 * 如果不指定要包含的文件扩展名，工具会包含所有文件
-* 如果不指定要排除的文件扩展名，工具会排除以下文件扩展名：`.lock`、`.out`、`.yaml`、`.txt`、`.md`、`.csv`、`.gitignore`、`.sh`、`.bat`、`.xml`、`.yml`、`.json`、`.png`、`.jpg`、`.jpeg`、`.gif`、`.bmp`、`.ico`、`.db`、`.sqlite`、`.bin`、`.exe`、`.dll`、`.so`、`.dylib`
+* 如果不指定要排除的文件扩展名，工具会排除以下文件扩展名：`.lock`、`.out`、`.yaml`、`.txt`、`.md`、`.csv`、`.gitignore`、`.sh`、`.bat`、`.xml`、`.yml`、`.json`、`.png`、`.jpg`、`.jpeg`、`.gif`、`.bmp`、`.ico`、`.db`、`.sqlite`、`.bin`、`.exe`、`.dll`、`.so`、`.dylib`,'.git'
 
 ## 工作流程
 

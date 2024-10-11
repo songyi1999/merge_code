@@ -3,7 +3,7 @@ import re
 import argparse
 from typing import List, Tuple
 
-VERSION = "0.1.1" 
+VERSION = "0.1.2" 
 
 def remove_comments(code: str, file_ext: str) -> str:
     if file_ext in ['.js', '.vue']:
@@ -108,7 +108,7 @@ def main():
     exclude_exts = [f".{ext.strip().lower()}" for ext in args.exclude.split(',')] if args.exclude else []
     exclude_dirs = [dir.strip() for dir in args.exclude_dirs.split(',')] if args.exclude_dirs else []
     
-    default_exclude = ['.lock','.out','.yaml','.txt','.md', '.csv','.gitignore',  '.sh','.bat','.xml', '.yml',  '.json','.png', '.jpg', '.jpeg', '.gif', '.bmp', '.ico', '.db', '.sqlite', '.bin', '.exe', '.dll', '.so', '.dylib']
+    default_exclude = ['.git','.lock','.out','.yaml','.txt','.md', '.csv','.gitignore',  '.sh','.bat','.xml', '.yml',  '.json','.png', '.jpg', '.jpeg', '.gif', '.bmp', '.ico', '.db', '.sqlite', '.bin', '.exe', '.dll', '.so', '.dylib']
     exclude_exts.extend([ext for ext in default_exclude if ext not in exclude_exts])
     
     output_file = args.output

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "merge_code"
-version = "0.1.1"
+version = "0.1.2"
 authors = [
   { name="sy", email="songyi1999@gmail.com" },
 ]
