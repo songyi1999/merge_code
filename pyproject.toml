@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "merge_code"
+version = "0.1.0"
+authors = [
+  { name="sy", email="songyi1999@gmail.com" },
+]
+description = "A tool to merge source code files for software copyright application"
+readme = "README.md"
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/songyi1999/merge_code"
+"Bug Tracker" = "https://github.com/songyi1999/merge_code/issues"
+
+[project.scripts]
+merge_code = "merge_code.main:main"
