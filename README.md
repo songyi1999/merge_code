@@ -15,11 +15,7 @@
 * `-e` 或 `--exclude`: 指定要排除的文件扩展名（逗号分隔）
 * `-o` 或 `--output`: 指定输出文件名（默认为 `out.txt`）
 
-### 示例
 
-```bash
-python merge_code.py -d /path/to/directory -s login.vue -p 100 -i .js,.vue -e .lock,.out
-```
 
 ### 默认行为
 
@@ -40,3 +36,29 @@ python merge_code.py -d /path/to/directory -s login.vue -p 100 -i .js,.vue -e .l
 * 请确保指定的文件扩展名正确
 * 请确保指定的页面数合理
 * 请确保输出文件名正确
+
+## 安装方法
+
+#### 用pip 安装
+```
+python -m pip install merge_code
+```
+
+#### 源码安装
+
+```
+git clone https://github.com/songyi1999/merge_code.git
+cd merge_code
+python -m pip install -e .
+```
+
+### 使用示例
+
+```bash
+merge_code -d /path/to/directory 
+```
+或
+```
+cd /path/to/directory
+merge_code
+```
