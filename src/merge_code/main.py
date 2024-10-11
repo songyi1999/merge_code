@@ -3,7 +3,7 @@ import re
 import argparse
 from typing import List, Tuple
 
-VERSION = "0.2.0"  # Updated version number due to significant changes
+VERSION = "0.2.1" 
 
 def get_file_extension(file_path: str) -> str:
     file_name = os.path.basename(file_path)
@@ -62,12 +62,12 @@ def find_start_file(directory: str, start_files: List[str]) -> str:
                 full_path = os.path.join(root, start_file)
                 print(f"Found start file: {full_path}")
                 return full_path
-    print("No start file found.")
+    print("Warning: No start file found.")
     return None
 
 def merge_code(file_list: List[str], start_file: str, max_pages: int) -> Tuple[str, int]:
-    if start_file:
-        file_list = [f for f in file_list if f != start_file]
+    if start_file and start_file in file_list:
+        file_list.remove(start_file)
         file_list.insert(0, start_file)
 
     merged_code = ""
@@ -101,7 +101,7 @@ def main():
     parser.add_argument("-p", "--pages", type=int, default=60, help="Number of pages to extract (default: 60)")
     parser.add_argument("-i", "--include", help="Comma-separated list of file extensions to include (overrides default)")
     parser.add_argument("-o", "--output", default="out.txt", help="Output file name (default: out.txt)")
-    parser.add_argument("-x", "--exclude-dirs", help="Comma-separated list of directory names to exclude")
+    parser.add_argument("-x", "--exclude-dirs", help="Comma-separated list of directory names to exclude (appends to default)")
     parser.add_argument("-v", "--version", action="version", version=f"%(prog)s {VERSION}")
     
     args = parser.parse_args()
@@ -111,7 +111,10 @@ def main():
     max_pages = args.pages
     default_include = ['.py', '.js', '.jsx', '.ts', '.tsx', '.vue', '.html', '.css', '.scss', '.sass', '.less', '.php', '.java', '.c', '.cpp', '.h', '.hpp']
     include_exts = [f".{ext.strip().lower()}" for ext in args.include.split(',')] if args.include else default_include
-    exclude_dirs = [dir.strip() for dir in args.exclude_dirs.split(',')] if args.exclude_dirs else []
+    
+    default_exclude_dirs = ['node_modules', 'dist', 'build', 'vendor', '.git', '.idea', '.vscode', '__pycache__', 'temp', 'tmp']
+    user_exclude_dirs = [dir.strip() for dir in args.exclude_dirs.split(',')] if args.exclude_dirs else []
+    exclude_dirs = list(set(default_exclude_dirs + user_exclude_dirs))  # Using set to remove duplicates
     
     output_file = args.output
 
@@ -122,16 +125,15 @@ def main():
 
     if args.start_file:
         start_file = find_start_file(directory, [args.start_file])
-        if not start_file:
-            print("Error: Start file '{}' not found in the directory tree.".format(args.start_file))
-            return
     else:
         start_file = find_start_file(directory, start_files)
-        if not start_file:
-            print("Error: None of the default start files {} found in the directory tree.".format(start_files))
-            return
 
     file_list = find_files(directory, include_exts, exclude_dirs)
+    
+    if not file_list:
+        print("Error: No files found matching the specified criteria.")
+        return
+
     merged_code, files_processed = merge_code(file_list, start_file, max_pages)
 
     with open(output_file, 'w', encoding='utf-8') as out_file:
