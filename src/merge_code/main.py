@@ -3,6 +3,8 @@ import re
 import argparse
 from typing import List, Tuple
 
+VERSION = "0.1.1" 
+
 def remove_comments(code: str, file_ext: str) -> str:
     if file_ext in ['.js', '.vue']:
         code = re.sub(r'//.*', '', code)
@@ -32,9 +34,11 @@ def process_file(file_path: str) -> str:
     print(f"Error: Unable to read file {file_path} with any of the attempted encodings.")
     return ""
 
-def find_files(directory: str, include_exts: List[str], exclude_exts: List[str]) -> List[str]:
+def find_files(directory: str, include_exts: List[str], exclude_exts: List[str], exclude_dirs: List[str]) -> List[str]:
     file_list = []
-    for root, _, files in os.walk(directory):
+    for root, dirs, files in os.walk(directory):
+        # Remove excluded directories
+        dirs[:] = [d for d in dirs if d not in exclude_dirs]
         for file in files:
             file_path = os.path.join(root, file)
             file_ext = os.path.splitext(file)[1].lower()
@@ -92,6 +96,8 @@ def main():
     parser.add_argument("-i", "--include", help="Comma-separated list of file extensions to include")
     parser.add_argument("-e", "--exclude", help="Comma-separated list of file extensions to exclude")
     parser.add_argument("-o", "--output", default="out.txt", help="Output file name (default: out.txt)")
+    parser.add_argument("-x", "--exclude-dirs", help="Comma-separated list of directory names to exclude")
+    parser.add_argument("-v", "--version", action="version", version=f"%(prog)s {VERSION}")
     
     args = parser.parse_args()
 
@@ -100,6 +106,7 @@ def main():
     max_pages = args.pages
     include_exts = [f".{ext.strip().lower()}" for ext in args.include.split(',')] if args.include else []
     exclude_exts = [f".{ext.strip().lower()}" for ext in args.exclude.split(',')] if args.exclude else []
+    exclude_dirs = [dir.strip() for dir in args.exclude_dirs.split(',')] if args.exclude_dirs else []
     
     default_exclude = ['.lock','.out','.yaml','.txt','.md', '.csv','.gitignore',  '.sh','.bat','.xml', '.yml',  '.json','.png', '.jpg', '.jpeg', '.gif', '.bmp', '.ico', '.db', '.sqlite', '.bin', '.exe', '.dll', '.so', '.dylib']
     exclude_exts.extend([ext for ext in default_exclude if ext not in exclude_exts])
@@ -109,6 +116,7 @@ def main():
     print("Working directory:", directory)
     print("Start files to search for:", start_files)
     print("Excluded file extensions:", exclude_exts)
+    print("Excluded directories:", exclude_dirs)
 
     if args.start_file:
         start_file = find_start_file(directory, [args.start_file])
@@ -121,7 +129,7 @@ def main():
             print("Error: None of the default start files {} found in the directory tree.".format(start_files))
             return
 
-    file_list = find_files(directory, include_exts, exclude_exts)
+    file_list = find_files(directory, include_exts, exclude_exts, exclude_dirs)
     merged_code, files_processed = merge_code(file_list, start_file, max_pages)
 
     with open(output_file, 'w', encoding='utf-8') as out_file:
