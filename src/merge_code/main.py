@@ -3,8 +3,13 @@ import re
 import argparse
 from typing import List, Tuple
 
-VERSION = "0.1.2" 
+VERSION = "0.1.3" 
 
+def get_file_extension(file_path: str) -> str:
+    file_name = os.path.basename(file_path)
+    if file_name.startswith('.') and '.' not in file_name[1:]:
+        return file_name  # Return the whole filename for hidden files without extensions
+    return os.path.splitext(file_name)[1].lower()
 def remove_comments(code: str, file_ext: str) -> str:
     if file_ext in ['.js', '.vue']:
         code = re.sub(r'//.*', '', code)
@@ -25,7 +30,7 @@ def process_file(file_path: str) -> str:
             with open(file_path, 'r', encoding=encoding) as file:
                 content = file.read()
             print(f"Successfully read file {file_path} with encoding {encoding}")
-            file_ext = os.path.splitext(file_path)[1]
+            file_ext = get_file_extension(file_path)
             content = remove_comments(content, file_ext)
             content = remove_empty_lines(content)
             return content
@@ -41,7 +46,7 @@ def find_files(directory: str, include_exts: List[str], exclude_exts: List[str],
         dirs[:] = [d for d in dirs if d not in exclude_dirs]
         for file in files:
             file_path = os.path.join(root, file)
-            file_ext = os.path.splitext(file)[1].lower()
+            file_ext = get_file_extension(file_path)
             if (not include_exts or file_ext in include_exts) and file_ext not in exclude_exts:
                 file_list.append(file_path)
     return file_list
