@@ -5,7 +5,7 @@ import argparse
 from typing import List, Tuple
 from fnmatch import fnmatch
 
-VERSION = "0.2.3"
+VERSION = "0.2.4"
 
 def get_file_extension(file_path: str) -> str:
     file_name = os.path.basename(file_path)
@@ -140,7 +140,7 @@ def main():
     default_include = ['.py', '.js', '.jsx', '.ts', '.tsx', '.vue', '.html', '.css', '.scss', '.sass', '.less', '.php', '.java', '.c', '.cpp', '.h', '.hpp']
     include_exts = [f".{ext.strip().lower()}" for ext in (args.include or config.get('include', '')).split(',')] if args.include or 'include' in config else default_include
     
-    default_exclude_dirs = ['node_modules', 'dist', 'build', 'vendor', '.git', '.idea', '.vscode', '__pycache__', 'temp', 'tmp']
+    default_exclude_dirs = ['node_modules', 'dist', 'build', 'vendor', '.git', '.idea', '.vscode', '__pycache__', 'temp', 'tmp','packages','modules']
     user_exclude_dirs = [dir.strip() for dir in (args.exclude_dirs or config.get('exclude_dirs', '')).split(',')] if args.exclude_dirs or 'exclude_dirs' in config else []
     exclude_dirs = list(set(default_exclude_dirs + user_exclude_dirs))
 
