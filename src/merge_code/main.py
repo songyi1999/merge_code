@@ -5,7 +5,7 @@ import argparse
 from typing import List, Tuple
 from fnmatch import fnmatch
 
-VERSION = "0.2.2"
+VERSION = "0.2.3"
 
 def get_file_extension(file_path: str) -> str:
     file_name = os.path.basename(file_path)
@@ -108,10 +108,21 @@ def load_config(config_file: str) -> dict:
         return {}
 
 def main():
+    print("\nConfiguration file template (.merge_code.json):")
+    config_template = {
+        "directory": ".",
+        "start_files": ["login.vue", "app.py", "index.js", "index.php", "index.html"],
+        "pages": 60,
+        "include": ".py,.js,.jsx,.ts,.tsx,.vue,.html,.css,.scss,.sass,.less,.php,.java,.c,.cpp,.h,.hpp",
+        "exclude_dirs": "node_modules,dist,build,vendor,.git,.idea,.vscode,__pycache__,temp,tmp",
+        "exclude_files": "*.min.js,*.min.css,package-lock.json,yarn.lock,pnpm-lock.yaml,postcss.config.js,vue.config.js,babel.config.js,.eslintrc.js,.merge_code.json",
+        "output": "out.txt"
+    }
+    print(json.dumps(config_template, indent=2))
     parser = argparse.ArgumentParser(description="Merge source code files for software copyright application.")
     parser.add_argument("-d", "--directory", default=".", help="Working directory (default: current directory)")
     parser.add_argument("-s", "--start-file", help="Start file name (will be searched recursively)")
-    parser.add_argument("-p", "--pages", type=int, default=60, help="Number of pages to extract (default: 60)")
+    parser.add_argument("-p", "--pages", type=int, default=100, help="Number of pages to extract (default: 100)")
     parser.add_argument("-i", "--include", help="Comma-separated list of file extensions to include (overrides default)")
     parser.add_argument("-o", "--output", default="out.txt", help="Output file name (default: out.txt)")
     parser.add_argument("-x", "--exclude-dirs", help="Comma-separated list of directory patterns to exclude (appends to default)")
@@ -133,7 +144,7 @@ def main():
     user_exclude_dirs = [dir.strip() for dir in (args.exclude_dirs or config.get('exclude_dirs', '')).split(',')] if args.exclude_dirs or 'exclude_dirs' in config else []
     exclude_dirs = list(set(default_exclude_dirs + user_exclude_dirs))
 
-    default_exclude_files = ['*.min.js', '*.min.css', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'postcss.config.js', 'vue.config.js', 'babel.config.js', '.eslintrc.js', '.merge_code.json']
+    default_exclude_files = [ 'index.css' ,'*.min.js', '*.min.css', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', '*.config.js', 'vue.config.js', 'babel.config.js', '.eslintrc.js', '.merge_code.json']
     user_exclude_files = [file.strip() for file in (args.exclude_files or config.get('exclude_files', '')).split(',')] if args.exclude_files or 'exclude_files' in config else []
     exclude_files = list(set(default_exclude_files + user_exclude_files))
     
@@ -165,17 +176,7 @@ def main():
     print("Merged code saved to {}".format(output_file))
     print("Total lines: {}".format(len(merged_code.split('\n'))))
 
-    print("\nConfiguration file template (.merge_code.json):")
-    config_template = {
-        "directory": ".",
-        "start_files": ["login.vue", "app.py", "index.js", "index.php", "index.html"],
-        "pages": 60,
-        "include": ".py,.js,.jsx,.ts,.tsx,.vue,.html,.css,.scss,.sass,.less,.php,.java,.c,.cpp,.h,.hpp",
-        "exclude_dirs": "node_modules,dist,build,vendor,.git,.idea,.vscode,__pycache__,temp,tmp",
-        "exclude_files": "*.min.js,*.min.css,package-lock.json,yarn.lock,pnpm-lock.yaml,postcss.config.js,vue.config.js,babel.config.js,.eslintrc.js,.merge_code.json",
-        "output": "out.txt"
-    }
-    print(json.dumps(config_template, indent=2))
+   
 
 if __name__ == "__main__":
     main()
