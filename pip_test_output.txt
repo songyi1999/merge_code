@@ -4,37 +4,23 @@ import json
 import argparse
 from typing import List, Tuple
 from fnmatch import fnmatch
-
-VERSION = "0.2.5"
-
+VERSION = "0.2.4"
 def get_file_extension(file_path: str) -> str:
     file_name = os.path.basename(file_path)
     if file_name.startswith('.') and '.' not in file_name[1:]:
-        return file_name  # Return the whole filename for hidden files without extensions
+        return file_name  
     return os.path.splitext(file_name)[1].lower()
-
 def remove_comments(code: str, file_ext: str) -> str:
-    if file_ext in ['.js', '.vue', '.go', '.c', '.cpp', '.java', '.ts', '.tsx']:
-        # C风格注释：// 和 /* */
+    if file_ext in ['.js', '.vue']:
         code = re.sub(r'//.*', '', code)
         code = re.sub(r'/\*[\s\S]*?\*/', '', code)
     elif file_ext == '.py':
-        # Python注释：# 和 三引号
-        code = re.sub(r'#.*', '', code)
-        code = re.sub(r"'''[\s\S]*?'''", '', code)
-        code = re.sub(r'"""[\s\S]*?"""', '', code)
-    elif file_ext in ['.html', '.xml']:
-        # HTML/XML注释：<!-- -->
-        code = re.sub(r'<!--[\s\S]*?-->', '', code)
-    elif file_ext in ['.css', '.scss', '.sass', '.less']:
-        # CSS注释：/* */ 和 // (SCSS/SASS)
-        code = re.sub(r'/\*[\s\S]*?\*/', '', code)
-        code = re.sub(r'//.*', '', code)
+        code = re.sub(r'
+        code = re.sub(r"", '', code)
+        code = re.sub(r'', '', code)
     return code
-
 def remove_empty_lines(code: str) -> str:
     return '\n'.join(line for line in code.split('\n') if line.strip())
-
 def process_file(file_path: str) -> str:
     encodings = ['utf-8', 'gbk', 'iso-8859-1', 'utf-16']
     for encoding in encodings:
@@ -50,11 +36,9 @@ def process_file(file_path: str) -> str:
             continue
     print(f"Error: Unable to read file {file_path} with any of the attempted encodings.")
     return ""
-
 def find_files(directory: str, include_exts: List[str], exclude_dirs: List[str], exclude_files: List[str]) -> List[str]:
     file_list = []
     for root, dirs, files in os.walk(directory):
-        # Remove excluded directories
         dirs[:] = [d for d in dirs if not any(fnmatch(d, pattern) for pattern in exclude_dirs)]
         for file in files:
             file_path = os.path.join(root, file)
@@ -62,7 +46,6 @@ def find_files(directory: str, include_exts: List[str], exclude_dirs: List[str],
             if file_ext in include_exts and not any(fnmatch(file, pattern) for pattern in exclude_files):
                 file_list.append(file_path)
     return file_list
-
 def find_start_file(directory: str, start_files: List[str]) -> str:
     print("Searching for start files in directory:", directory)
     for root, _, files in os.walk(directory):
@@ -75,36 +58,29 @@ def find_start_file(directory: str, start_files: List[str]) -> str:
                 return full_path
     print("Warning: No start file found.")
     return None
-
 def merge_code(file_list: List[str], start_file: str, max_pages: int) -> Tuple[str, int]:
     if start_file and start_file in file_list:
         file_list.remove(start_file)
         file_list.insert(0, start_file)
-
     merged_code = ""
     total_lines = 0
     files_processed = 0
-
     for file_path in file_list:
         content = process_file(file_path)
         if not content:
             print(f"Skipping file {file_path} due to reading error")
             continue
         lines = content.split('\n')
-        
         if total_lines + len(lines) > max_pages * 50:
             remaining_lines = max_pages * 50 - total_lines
             merged_code += '\n'.join(lines[:remaining_lines])
             total_lines += remaining_lines
             files_processed += 1
             break
-        
         merged_code += content + '\n'  
         total_lines += len(lines)
         files_processed += 1
-
     return merged_code.strip(), files_processed
-
 def load_config(config_file: str) -> dict:
     try:
         with open(config_file, 'r') as f:
@@ -115,16 +91,15 @@ def load_config(config_file: str) -> dict:
     except json.JSONDecodeError:
         print(f"Error parsing {config_file}. Using default settings.")
         return {}
-
 def main():
     print("\nConfiguration file template (.merge_code.json):")
     config_template = {
         "directory": ".",
-        "start_files": ["main.go", "main.py", "app.py", "index.js", "index.php", "index.html", "login.vue"],
+        "start_files": ["login.vue", "app.py", "index.js", "index.php", "index.html"],
         "pages": 60,
-        "include": ".go,.py,.js,.jsx,.ts,.tsx,.vue,.html,.css,.scss,.sass,.less,.php,.java,.c,.cpp,.h,.hpp",
-        "exclude_dirs": "node_modules,dist,build,vendor,.git,.idea,.vscode,__pycache__,temp,tmp,target",
-        "exclude_files": "*.min.js,*.min.css,package-lock.json,yarn.lock,pnpm-lock.yaml,postcss.config.js,vue.config.js,babel.config.js,.eslintrc.js,.merge_code.json,go.sum",
+        "include": ".py,.js,.jsx,.ts,.tsx,.vue,.html,.css,.scss,.sass,.less,.php,.java,.c,.cpp,.h,.hpp",
+        "exclude_dirs": "node_modules,dist,build,vendor,.git,.idea,.vscode,__pycache__,temp,tmp",
+        "exclude_files": "*.min.js,*.min.css,package-lock.json,yarn.lock,pnpm-lock.yaml,postcss.config.js,vue.config.js,babel.config.js,.eslintrc.js,.merge_code.json",
         "output": "out.txt"
     }
     print(json.dumps(config_template, indent=2))
@@ -138,15 +113,12 @@ def main():
     parser.add_argument("-e", "--exclude-files", help="Comma-separated list of file patterns to exclude (appends to default)")
     parser.add_argument("-c", "--config", default=".merge_code.json", help="Path to configuration file (default: .merge_code.json)")
     parser.add_argument("-v", "--version", action="version", version=f"%(prog)s {VERSION}")
-    
     args = parser.parse_args()
-
     config = load_config(args.config)
-
     directory = os.path.normpath(os.path.abspath(args.directory or config.get('directory', '.')))
-    start_files = config.get('start_files', ['main.go', 'main.py', 'app.py', 'index.js', 'index.php', 'index.html', 'login.vue'])
+    start_files = config.get('start_files', ['login.vue', 'app.py', 'index.js', 'index.php', 'index.html'])
     max_pages = args.pages or config.get('pages', 60)
-    default_include = ['.go', '.py', '.js', '.jsx', '.ts', '.tsx', '.vue', '.html', '.css', '.scss', '.sass', '.less', '.php', '.java', '.c', '.cpp', '.h', '.hpp']
+    default_include = ['.py', '.js', '.jsx', '.ts', '.tsx', '.vue', '.html', '.css', '.scss', '.sass', '.less', '.php', '.java', '.c', '.cpp', '.h', '.hpp']
     if args.include or 'include' in config:
         include_str = args.include or config.get('include', '')
         include_exts = []
@@ -157,44 +129,144 @@ def main():
             include_exts.append(ext)
     else:
         include_exts = default_include
-    
     default_exclude_dirs = ['node_modules', 'dist', 'build', 'vendor', '.git', '.idea', '.vscode', '__pycache__', 'temp', 'tmp','packages','modules']
     user_exclude_dirs = [dir.strip() for dir in (args.exclude_dirs or config.get('exclude_dirs', '')).split(',')] if args.exclude_dirs or 'exclude_dirs' in config else []
     exclude_dirs = list(set(default_exclude_dirs + user_exclude_dirs))
-
     default_exclude_files = [ 'index.css' ,'*.min.js', '*.min.css', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', '*.config.js', 'vue.config.js', 'babel.config.js', '.eslintrc.js', '.merge_code.json']
     user_exclude_files = [file.strip() for file in (args.exclude_files or config.get('exclude_files', '')).split(',')] if args.exclude_files or 'exclude_files' in config else []
     exclude_files = list(set(default_exclude_files + user_exclude_files))
-    
     output_file = args.output or config.get('output', 'out.txt')
-
     print("Working directory:", directory)
     print("Start files to search for:", start_files)
     print("Included file extensions:", include_exts)
     print("Excluded directories:", exclude_dirs)
     print("Excluded files:", exclude_files)
-
     if args.start_file:
         start_file = find_start_file(directory, [args.start_file])
     else:
         start_file = find_start_file(directory, start_files)
-
     file_list = find_files(directory, include_exts, exclude_dirs, exclude_files)
-    
     if not file_list:
         print("Error: No files found matching the specified criteria.")
         return
-
     merged_code, files_processed = merge_code(file_list, start_file, max_pages)
-
     with open(output_file, 'w', encoding='utf-8') as out_file:
         out_file.write(merged_code)
-
     print("Processed {} files.".format(files_processed))
     print("Merged code saved to {}".format(output_file))
     print("Total lines: {}".format(len(merged_code.split('\n'))))
-
-   
-
 if __name__ == "__main__":
     main()
+import os
+import sys
+current_dir = os.path.dirname(os.path.abspath(__file__))
+src_dir = os.path.join(current_dir, 'src')
+sys.path.insert(0, src_dir)
+from merge_code.main import main
+if __name__ == "__main__":
+    main()
+import os
+from setuptools import setup, find_packages
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+def read_requirements():
+    if os.path.exists("requirements.txt"):
+        with open("requirements.txt", "r", encoding="utf-8") as f:
+            return [line.strip() for line in f if line.strip() and not line.startswith("
+    return []
+setup(
+    name="merge_code",
+    version="0.1.0",
+    author="sy",
+    author_email="songyi1999@gmail.com",
+    description="A tool to merge source code files for software copyright application",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/songyi1999/merge_code",
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Developers",
+        "Topic :: Software Development :: Build Tools",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Operating System :: OS Independent",
+    ],
+    python_requires=">=3.6",
+    install_requires=read_requirements(),
+    entry_points={
+        "console_scripts": [
+            "merge_code=merge_code.main:main",
+        ],
+    },
+    include_package_data=True,
+    package_data={
+        "merge_code": ["*.txt", "*.md"],
+    },
+    extras_require={
+        "dev": ["pytest", "flake8", "mypy"],
+    },
+    project_urls={
+        "Bug Reports": "https://github.com/songyi1999/merge_code/issues",
+        "Source": "https://github.com/songyi1999/merge_code",
+    },
+)
+from .main import main
+from .main import main
+if __name__ == "__main__":
+    main()
+import unittest
+import os
+import sys
+import tempfile
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+from merge_code.main import merge_code, find_files, find_start_file, process_file
+class TestMain(unittest.TestCase):
+    def test_merge_code(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            file1 = os.path.join(tmp_dir, 'file1.py')
+            file2 = os.path.join(tmp_dir, 'file2.py')
+            with open(file1, 'w') as f:
+                f.write('print("Hello World!")')
+            with open(file2, 'w') as f:
+                f.write('print("Hello Again!")')
+            merged_code, _ = merge_code([file1, file2], None, 100)
+            self.assertEqual(merged_code.strip(), 'print("Hello World!")\nprint("Hello Again!")')
+    def test_find_files(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            file1 = os.path.join(tmp_dir, 'file1.py')
+            file2 = os.path.join(tmp_dir, 'file2.py')
+            file3 = os.path.join(tmp_dir, 'file3.txt')
+            with open(file1, 'w') as f:
+                f.write('print("Hello World!")')
+            with open(file2, 'w') as f:
+                f.write('print("Hello Again!")')
+            with open(file3, 'w') as f:
+                f.write('Hello World!')
+            files = find_files(tmp_dir, ['.py'], [], [])
+            self.assertEqual(sorted(files), sorted([file1, file2]))
+    def test_find_start_file(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            file1 = os.path.join(tmp_dir, 'file1.py')
+            file2 = os.path.join(tmp_dir, 'file2.py')
+            with open(file1, 'w') as f:
+                f.write('print("Hello World!")')
+            with open(file2, 'w') as f:
+                f.write('print("Hello Again!")')
+            start_file = find_start_file(tmp_dir, ['file1.py'])
+            self.assertEqual(start_file, file1)
+    def test_process_file(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            file1 = os.path.join(tmp_dir, 'file1.py')
+            with open(file1, 'w') as f:
+                f.write('print("Hello World!")')
+            content = process_file(file1)
+            self.assertEqual(content.strip(), 'print("Hello World!")')
+if __name__ == '__main__':
+    unittest.main()

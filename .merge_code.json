@@ -1,0 +1,9 @@
+{
+  "directory": ".",
+  "start_files": ["main.go", "main.py", "app.py", "index.js", "index.php", "index.html", "login.vue"],
+  "pages": 60,
+  "include": ".go,.py,.js,.jsx,.ts,.tsx,.vue,.html,.css,.scss,.sass,.less,.php,.java,.c,.cpp,.h,.hpp",
+  "exclude_dirs": "node_modules,dist,build,vendor,.git,.idea,.vscode,__pycache__,temp,tmp,target",
+  "exclude_files": "*.min.js,*.min.css,package-lock.json,yarn.lock,pnpm-lock.yaml,postcss.config.js,vue.config.js,babel.config.js,.eslintrc.js,.merge_code.json,go.sum,go.mod",
+  "output": "out.txt"
+}

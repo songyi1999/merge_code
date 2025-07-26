@@ -1,0 +1,21 @@
+package main
+import (
+	"fmt"
+	"log"
+)
+func main() {
+	fmt.Println("Hello, World!")
+	log.Println("这是一个Go程序示例")
+}
+func greet(name string) string {
+	return fmt.Sprintf("Hello, %s!", name)
+}
+package main
+import "strings"
+type StringUtils struct{}
+func (s *StringUtils) ToUpper(input string) string {
+	return strings.ToUpper(input)
+}
+func IsEmpty(str string) bool {
+	return len(strings.TrimSpace(str)) == 0
+}

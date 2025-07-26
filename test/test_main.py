@@ -1,7 +1,12 @@
 import unittest
 import os
+import sys
 import tempfile
-from main import merge_code, find_files, find_start_file, process_file
+
+# 添加 src 目录到 Python 路径
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+
+from merge_code.main import merge_code, find_files, find_start_file, process_file
 
 class TestMain(unittest.TestCase):
 
@@ -35,8 +40,8 @@ class TestMain(unittest.TestCase):
                 f.write('Hello World!')
 
             # 测试 find_files 函数
-            files = find_files(tmp_dir, ['.py'], [])
-            self.assertEqual(files, [file1, file2])
+            files = find_files(tmp_dir, ['.py'], [], [])
+            self.assertEqual(sorted(files), sorted([file1, file2]))
 
     def test_find_start_file(self):
         # 创建临时文件
